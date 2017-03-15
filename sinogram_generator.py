@@ -27,3 +27,20 @@ def bresenham(x, y, x2, y2, img, fun_to_exec_on_points=lambda x, y: None):
         else:
             x += dx2
             y += dy2
+
+# da - step, n - sensors per step, l - spread
+def generate_sinogram(img, da=1, n=20, phi=30):
+    res = []
+    r = (len(img) // 2) - 1
+
+    for alpha in range(0, 180, da):
+        xe = r * cos(radians(alpha)) + r
+        ye = r * sin(radians(alpha)) + r
+        # img[int(xe), int(ye)] = 1
+        for i in range(0, n, 1):
+            deg = alpha - (phi / 2) + (i * (phi / n))
+            xd = r * cos(radians(deg) + pi) + r
+            yd = r * sin(radians(deg) + pi) + r
+            # img[int(xd), int(yd)] = 0.3
+            # print(alpha, deg, xe, ye, xd, yd)
+    return
