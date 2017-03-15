@@ -1,52 +1,29 @@
 from pylab import *
 
 
-def bresenham(x1, y1, x2, y2, img, fun_to_exec_on_points=lambda x, y : None):
-    res = 0
-    x, y = x1, y1
+def bresenham(x, y, x2, y2, img, fun_to_exec_on_points=lambda x, y: None):
+    w = x2 - x
+    h = y2 - y
+    dx1, dy1, dx2, dy2 = sign(w), sign(h), sign(w), 0
 
-    # kierunek rysowania
-    getDir = lambda x1, x2: ((1 if x1 < x2 else -1), abs(x1 - x2))
-    xi, dx = getDir(x1, x2)
-    yi, dy = getDir(y1, y2)
+    length = abs(w)
+    height = abs(h)
 
-    doBreak = lambda x, y, img: False if (x < len(img) and y < len(img)) else True
+    # switch x and y axis
+    if length <= height:
+        length = abs(h)
+        height = abs(w)
+        dy2 = sign(h)
+        dx2 = 0
 
-    fun_to_exec_on_points(x, y)
-    if dx > dy:
-        ai = (dy - dx) * 2
-        bi = dy * 2
-        d = bi - dx
-
-        while x != x2:
-            if d >= 0:
-                x += xi
-                y += yi
-                d += ai
-            else:
-                d += bi
-                x += xi
-
-            if doBreak(x, y, img):
-                break
-
-            fun_to_exec_on_points(x, y)
-
-    else:
-        ai = (dx - dy) * 2
-        bi = dx * 2
-        d = bi - dy
-
-        while y != y2:
-            if d >= 0:
-                x += xi
-                y += yi
-                d += ai
-            else:
-                d += bi
-                x += xi
-
-            if doBreak(x, y, img):
-                break
-
-            fun_to_exec_on_points(x, y)
+    numerator = length // 2
+    for i in range(0, length , 1):
+        fun_to_exec_on_points(x, y)
+        numerator += height
+        if numerator >= length:
+            numerator -= length
+            x += dx1
+            y += dy1
+        else:
+            x += dx2
+            y += dy2
