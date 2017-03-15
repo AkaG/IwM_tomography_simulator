@@ -17,7 +17,7 @@ def bresenham(x, y, x2, y2, img, fun_to_exec_on_points=lambda x, y: None):
         dx2 = 0
 
     numerator = length // 2
-    for i in range(0, length , 1):
+    for i in range(0, length, 1):
         fun_to_exec_on_points(x, y)
         numerator += height
         if numerator >= length:
@@ -28,19 +28,32 @@ def bresenham(x, y, x2, y2, img, fun_to_exec_on_points=lambda x, y: None):
             x += dx2
             y += dy2
 
-# da - step, n - sensors per step, l - spread
-def generate_sinogram(img, da=1, n=20, phi=30):
-    res = []
-    r = (len(img) // 2) - 1
 
-    for alpha in range(0, 180, da):
-        xe = r * cos(radians(alpha)) + r
-        ye = r * sin(radians(alpha)) + r
-        # img[int(xe), int(ye)] = 1
+def calc_weakening(x, y, img, tmp):
+    tmp[0] += img[x, y]
+    if img[x, y] > 0:
+        tmp[1] += 1
+    tmp[2] += 1
+    # img[x,y] = 0.5
+
+
+# da - step, n - sensors per step, l - spread
+def generate_sinogram(img, da=1, n=50, phi=100):
+    res = []
+    r = (len(img) // 2)
+
+    for alpha in frange(0, 180, da):
+        xe = r * cos(radians(alpha)) + r - 1
+        ye = r * sin(radians(alpha)) + r - 1
+        tmp = []
         for i in range(0, n, 1):
             deg = alpha - (phi / 2) + (i * (phi / n))
-            xd = r * cos(radians(deg) + pi) + r
-            yd = r * sin(radians(deg) + pi) + r
-            # img[int(xd), int(yd)] = 0.3
-            # print(alpha, deg, xe, ye, xd, yd)
-    return
+            xd = r * cos(radians(deg) + pi) + r - 1
+            yd = r * sin(radians(deg) + pi) + r - 1
+            bresenhamret = [0, 0, 0]
+            bresenham(int(xe), int(ye), int(xd), int(yd), img, lambda x, y: calc_weakening(x, y, img, bresenhamret))
+            tmp.append(pow(bresenhamret[0], 2))
+        res.append(tmp)
+
+    res = divide(res, amax(res))
+    return res
