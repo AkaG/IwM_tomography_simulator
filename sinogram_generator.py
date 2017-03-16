@@ -29,31 +29,54 @@ def bresenham(x, y, x2, y2, img, fun_to_exec_on_points=lambda x, y: None):
             y += dy2
 
 
-def calc_weakening(x, y, img, tmp):
+def calc_weakening(x, y, img, imgcpy, tmp):
     tmp[0] += img[x, y]
+
     if img[x, y] > 0:
         tmp[1] += 1
     tmp[2] += 1
-    # img[x,y] = 0.5
+
+    imgcpy[x, y] = 0.5
+
+
+def generate_sinogram(img, ax=[None, None], step=1, start=0, end=180, n=50, phi=100):
+    res = []
+    cpy = copy(img)
+
+    # ax.clear()
+    generator = yield_generate_sinogram(img, cpy, step=step, start=start, end=end, n=n, phi=phi)
+    for i in range(start, end, step):
+        res.append(next(generator))
+
+        if (ax[0] != None and ax[1] != None):
+            ax[0].clear()
+            ax[1].clear()
+            ax[0].imshow(res, cmap=cm.Greys_r, vmin=0, vmax=amax(res))
+            ax[1].imshow(cpy, cmap=cm.Greys_r, vmin=0, vmax=1)
+            plt.pause(0.000001)
+
+    res = divide(res, amax(res))
+    return res, cpy
 
 
 # da - step, n - sensors per step, l - spread
-def generate_sinogram(img, da=1, n=50, phi=100):
-    res = []
+def yield_generate_sinogram(img, imgcpy, step=1, start=0, end=180, n=50, phi=100):
     r = (len(img) // 2)
 
-    for alpha in frange(0, 180, da):
+    for alpha in frange(start, end - 1, step):
         xe = r * cos(radians(alpha)) + r - 1
         ye = r * sin(radians(alpha)) + r - 1
         tmp = []
         for i in range(0, n, 1):
-            deg = alpha - (phi / 2) + (i * (phi / n))
+            if n - 1 == 0:
+                deg = alpha + (phi / 2)
+            else:
+                deg = alpha + (phi / 2) - (i * (phi / (n - 1)))
             xd = r * cos(radians(deg) + pi) + r - 1
             yd = r * sin(radians(deg) + pi) + r - 1
-            bresenhamret = [0, 0, 0]
-            bresenham(int(xe), int(ye), int(xd), int(yd), img, lambda x, y: calc_weakening(x, y, img, bresenhamret))
-            tmp.append(pow(bresenhamret[0], 2))
-        res.append(tmp)
 
-    res = divide(res, amax(res))
-    return res
+            bresenhamret = [0, 0, 0]
+            bresenham(int(xe), int(ye), int(xd), int(yd), img,
+                      lambda x, y: calc_weakening(x, y, img, imgcpy, bresenhamret))
+            tmp.append(bresenhamret[0])
+        yield tmp
