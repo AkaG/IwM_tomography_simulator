@@ -4,7 +4,7 @@ from sinogram_generator import *
 
 
 def main():
-    image = data.imread("img/Kwadraty2.jpg", as_grey=True)
+    image = data.imread("img/Shepp_logan.png", as_grey=True)
 
     plt.ion()
 
@@ -17,9 +17,9 @@ def main():
     ax2 = fig.add_subplot(133)
     axis = [ax, ax2]
 
-    img, cpy = generate_sinogram(image,ax=axis, step=1, start=0, end=180, n=80, phi=200)
+    img, cpy = generate_sinogram(image, step=1, start=0, end=180, n=131, phi=150)
 
-    ax.imshow(img, cmap=cm.Greys_r, vmin=0, vmax=1)
+    ax.imshow(array(img).transpose(), cmap=cm.Greys_r, vmin=0, vmax=1)
     ax2.imshow(cpy, cmap=cm.Greys_r, vmin=0, vmax=1)
     plt.pause(0.0001)
 

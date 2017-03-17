@@ -36,15 +36,16 @@ def calc_weakening(x, y, img, imgcpy, tmp):
         tmp[1] += 1
     tmp[2] += 1
 
-    imgcpy[x, y] = 0.5
+    imgcpy[x, y] = 1
 
 
 def generate_sinogram(img, ax=[None, None], step=1, start=0, end=180, n=50, phi=100):
     res = []
     cpy = copy(img)
 
-    # ax.clear()
-    generator = yield_generate_sinogram(img, cpy, step=step, start=start, end=end, n=n, phi=phi)
+    # generator = yield_generate_sinogram_cone(img, cpy, step=step, start=start, end=end, n=n, phi=phi)
+    generator = yield_generate_sinogram_parallel(img, cpy, step=step, start=start, end=end, n=n, phi=phi)
+
     for i in range(start, end, step):
         res.append(next(generator))
 
@@ -60,7 +61,7 @@ def generate_sinogram(img, ax=[None, None], step=1, start=0, end=180, n=50, phi=
 
 
 # da - step, n - sensors per step, l - spread
-def yield_generate_sinogram(img, imgcpy, step=1, start=0, end=180, n=50, phi=100):
+def yield_generate_sinogram_cone(img, imgcpy, step=1, start=0, end=180, n=50, phi=100):
     r = (len(img) // 2)
 
     for alpha in frange(start, end - 1, step):
@@ -74,6 +75,31 @@ def yield_generate_sinogram(img, imgcpy, step=1, start=0, end=180, n=50, phi=100
                 deg = alpha + (phi / 2) - (i * (phi / (n - 1)))
             xd = r * cos(radians(deg) + pi) + r - 1
             yd = r * sin(radians(deg) + pi) + r - 1
+
+            bresenhamret = [0, 0, 0]
+            bresenham(int(xe), int(ye), int(xd), int(yd), img,
+                      lambda x, y: calc_weakening(x, y, img, imgcpy, bresenhamret))
+            tmp.append(bresenhamret[0])
+        yield tmp
+
+
+# da - step, n - sensors per step, l - spread
+def yield_generate_sinogram_parallel(img, imgcpy, step=1, start=0, end=180, n=31, phi=150):
+    r = (len(img) // 2)
+
+    for alpha in frange(start, end - 1, step):
+        tmp = []
+        for i in range(0, n, 1):
+            if n - 1 == 0:
+                deg = phi / 2
+            else:
+                deg = (phi / 2) - (i * (phi / (n - 1)))
+
+            xe = r * cos(radians(alpha - deg)) + r - 1
+            ye = r * sin(radians(alpha - deg)) + r - 1
+
+            xd = r * cos(radians(alpha + deg) + pi) + r - 1
+            yd = r * sin(radians(alpha + deg) + pi) + r - 1
 
             bresenhamret = [0, 0, 0]
             bresenham(int(xe), int(ye), int(xd), int(yd), img,
