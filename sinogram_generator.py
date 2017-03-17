@@ -39,21 +39,25 @@ def calc_weakening(x, y, img, imgcpy, tmp):
     imgcpy[x, y] = 1
 
 
-def generate_sinogram(img, ax=[None, None], step=1, start=0, end=180, n=50, phi=100):
+def generate_sinogram(img, axis=[None, None], step=1, start=0, end=180, n=50, phi=100, type=None):
     res = []
     cpy = copy(img)
 
-    # generator = yield_generate_sinogram_cone(img, cpy, step=step, start=start, end=end, n=n, phi=phi)
-    generator = yield_generate_sinogram_parallel(img, cpy, step=step, start=start, end=end, n=n, phi=phi)
+    if type == "cone":
+        generator = yield_generate_sinogram_cone(img, cpy, step=step, start=start, end=end, n=n, phi=phi)
+    elif type == "parallel":
+        generator = yield_generate_sinogram_parallel(img, cpy, step=step, start=start, end=end, n=n, phi=phi)
+    else:
+        return None, None
 
     for i in range(start, end, step):
         res.append(next(generator))
 
-        if (ax[0] != None and ax[1] != None):
-            ax[0].clear()
-            ax[1].clear()
-            ax[0].imshow(res, cmap=cm.Greys_r, vmin=0, vmax=amax(res))
-            ax[1].imshow(cpy, cmap=cm.Greys_r, vmin=0, vmax=1)
+        if (axis[0] != None and axis[1] != None):
+            axis[0].clear()
+            axis[1].clear()
+            axis[0].imshow(res, cmap=cm.Greys_r, vmin=0, vmax=amax(res))
+            axis[1].imshow(cpy, cmap=cm.Greys_r, vmin=0, vmax=1)
             plt.pause(0.000001)
 
     res = divide(res, amax(res))
