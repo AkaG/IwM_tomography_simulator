@@ -23,6 +23,7 @@ def generate_sinogram(img, axis=[None, None], step=1, start=0, end=180, n=50, ph
         return None, None
 
     for i in range(start, end, step):
+        cpy[:] = img
         res.append(next(generator))
 
         if (axis[0] != None and axis[1] != None):
