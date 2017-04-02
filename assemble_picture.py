@@ -80,5 +80,5 @@ def normalize(img):
 
 def filterSinogram(sinogram, filterLen=10):
     filt = sheppLoganFilter(len=filterLen)
-    sinogram = [convolve(x, filt, 'full') for x in sinogram]
+    sinogram = [convolve(x, filt, 'same') for x in sinogram]
     return sinogram

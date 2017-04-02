@@ -39,30 +39,26 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        self._algorithminfo(0, 0)
-        self._pinfo(0, 3)
-
         self.ct = ct()
 
-        self.fig = Figure(figsize=(10, 5), dpi=100)
+        self._algorithminfo(0, 0)
+        self._pinfo(0, 6)
+        self._buttons(4, 0)
+        self.doAnimation = tk.BooleanVar()
+        c = tk.Checkbutton(master=self, text="Animation", variable=self.doAnimation)
+        c.grid(row=2, column=2)
+
+        self.fig = Figure(figsize=(15, 5), dpi=100)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.show()
+
         toolbar_frame = tk.Frame(self)
         toolbar = NavigationToolbar2TkAgg(self.canvas, toolbar_frame)
         toolbar.update()
 
-        self.canvas.get_tk_widget().grid(row=5, column=0, columnspan=5)
-        toolbar_frame.grid(row=6, column=0, columnspan=5)
-
-        self.readbutton = tk.Button(self, text="Load file", command=lambda: self.loadImage(), width=10)
-        self.readbutton.grid(row=4, column=0)
-
-        self.savebutton = tk.Button(self, text="Save file", command=lambda: self.saveImage(), width=10)
-        self.savebutton.grid(row=4, column=1)
-
-        self.generatebutton = tk.Button(self, text="Generate", command=lambda: self.generateButtonFunc(), width=10)
-        self.generatebutton.grid(row=4, column=2)
+        self.canvas.get_tk_widget().grid(row=10, column=0, columnspan=8)
+        toolbar_frame.grid(row=11, column=0, columnspan=7)
 
     def loadImage(self):
         self.ct.loadImage(self._get_file_name())
@@ -82,33 +78,65 @@ class StartPage(tk.Frame):
         ax = self.fig.add_subplot(232)
         ax2 = self.fig.add_subplot(233)
 
-        self.ct.generateSinogram(animate=lambda x,y : self.animate(x, y, [ax, ax2]))
+        if self.doAnimation.get():
+            self.ct.generateSinogram(animate=lambda x,y : self.animate(x, y, [ax, ax2]))
+        else:
+            self.ct.generateSinogram()
 
         ax.clear()
-        ax.imshow(self.ct.sinogram, cmap=cm.Greys_r, vmin=amin(self.ct.sinogram), vmax=amax(self.ct.sinogram))
+        ax.imshow(array(self.ct.sinogram).transpose(), cmap=cm.Greys_r, vmin=amin(self.ct.sinogram), vmax=amax(self.ct.sinogram))
         self.canvas.draw()
 
         ax2.clear()
         ax2.imshow(self.ct.lines, cmap=cm.Greys_r, vmin=amin(self.ct.lines), vmax=amax(self.ct.lines))
         self.canvas.draw()
 
+    def reconstructButtonFunc(self):
+        self.ct.filterSinogram(int(self.mask.get()))
+
+        ax = self.fig.add_subplot(235)
+        ax.clear()
+        ax.imshow(array(self.ct.filteredsinogram).transpose(), cmap=cm.Greys_r, vmin=amin(self.ct.filteredsinogram), vmax=amax(self.ct.filteredsinogram))
+        self.canvas.draw()
+
+        self.ct.reconstruct()
+
         ax = self.fig.add_subplot(234)
         ax.clear()
-        ax.imshow(self.ct.sinogram, cmap=cm.Greys_r, vmin=amin(self.ct.sinogram), vmax=amax(self.ct.sinogram))
+        ax.imshow(self.ct.reconstruction, cmap=cm.Greys_r, vmin=amin(self.ct.reconstruction), vmax=amax(self.ct.reconstruction))
+        self.canvas.draw()
+
+        self.ct.generateDiff()
+        ax = self.fig.add_subplot(236)
+        ax.clear()
+        ax.imshow(self.ct.reconstructionDiff, cmap=cm.Greys_r, vmin=amin(self.ct.reconstructionDiff), vmax=amax(self.ct.reconstruction))
         self.canvas.draw()
 
     def animate(self, res, cpy, axis):
         axis[0].clear()
         axis[1].clear()
-        axis[0].imshow(res, cmap=cm.Greys_r, vmin=0, vmax=amax(res))
+        axis[0].imshow(array(res).transpose(), cmap=cm.Greys_r, vmin=0, vmax=amax(res))
         axis[1].imshow(cpy, cmap=cm.Greys_r, vmin=0, vmax=1)
         self.canvas.draw()
-        # plt.pause(0.000001)
+
     def _get_file_name(self):
-        return askopenfilename(filetypes=(("JPG", "*.jpg"),
-                                          ("PNG", "*.png"),
+        return askopenfilename(filetypes=(("PNG", "*.png"),
+                                          ("JPG", "*.jpg"),
                                           ("DICOM", "*.dcm"),
                                           ("All files", "*.*")))
+
+    def _buttons(self, row, col):
+        self.readbutton = tk.Button(self, text="Load file", command=lambda: self.loadImage(), width=10)
+        self.readbutton.grid(row=row, column=col)
+
+        self.savebutton = tk.Button(self, text="Save file", command=lambda: self.saveImage(), width=10)
+        self.savebutton.grid(row=row, column=col+1)
+
+        self.generatebutton = tk.Button(self, text="Sinogram", command=lambda: self.generateButtonFunc(), width=10)
+        self.generatebutton.grid(row=row, column=col+2)
+
+        self.reconstructbutton = tk.Button(self, text="Reconstruct", command=lambda: self.reconstructButtonFunc(), width=10)
+        self.reconstructbutton.grid(row=row, column=col + 3)
 
     def _algorithminfo(self, row, col):
         self.steplabel = tk.Label(self, text="Step")
@@ -128,6 +156,12 @@ class StartPage(tk.Frame):
         self.spread = tk.Entry(self)
         self.spread.insert(0, 150)
         self.spread.grid(row=row + 2, column=col + 1)
+
+        self.masklabel = tk.Label(self, text="Mask")
+        self.masklabel.grid(row=row + 3, column=col)
+        self.mask = tk.Entry(self)
+        self.mask.insert(0, 40)
+        self.mask.grid(row=row + 3, column=col + 1)
 
     def _pinfo(self, row, col):
         self.pnamelabel = tk.Label(self, text="Name")
