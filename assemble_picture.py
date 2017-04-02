@@ -1,6 +1,5 @@
 from bresenham import *
 
-
 def draw_func(x, y, img, val):
     img[x, y] += val
 
@@ -61,10 +60,16 @@ def assemble_parallel(sinogram, drawimg, start_deg=0, step=1, phi=100):
                       lambda x, y: draw_func(x, y, drawimg, line[i]))
 
 
+def ramlakFilter(len=50):
+    filter = []
+    for i in range(-(int)(len / 2), (int)(len / 2) + (len % 2)):
+        filter.append(1 if i == 0 else (0 if i % 2 == 0 else ((-4) / (pi ** 2) / (i ** 2))))
+    return filter
+
 def sheppLoganFilter(len=50):
     filter = []
-    for i in range(-len, len + 1):
-        filter.append(1 if i == 0 else (0 if i % 2 == 0 else ((-4) / (pi) ** 2) / (i ** 2)))
+    for i in range(-(int)(len / 2), (int)(len / 2) + (len % 2)):
+        filter.append(((-2) / (pi ** 2) / ((4 * i ** 2) - 1)))
     return filter
 
 def normalize(img):
@@ -72,7 +77,8 @@ def normalize(img):
     img = divide(img, amax(img))
     return img
 
+
 def filterSinogram(sinogram, filterLen=10):
-    sheppLogFilter = sheppLoganFilter(len=filterLen)
-    sinogram = [convolve(x, sheppLogFilter, 'full') for x in sinogram]
+    filt = sheppLoganFilter(len=filterLen)
+    sinogram = [convolve(x, filt, 'full') for x in sinogram]
     return sinogram

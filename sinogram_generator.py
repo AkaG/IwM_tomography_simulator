@@ -11,7 +11,7 @@ def calc_weakening(x, y, img, imgcpy, tmp):
     imgcpy[x, y] = 1
 
 
-def generate_sinogram(img, axis=[None, None], step=1, start=0, end=180, n=50, phi=100, type=None):
+def generate_sinogram(img, axis=[None, None], step=1, start=0, end=180, n=50, phi=100, type=None, animation=lambda res, cpy: None):
     res = []
     cpy = copy(img)
 
@@ -22,16 +22,17 @@ def generate_sinogram(img, axis=[None, None], step=1, start=0, end=180, n=50, ph
     else:
         return None, None
 
-    for i in range(start, end, step):
+    for i in frange(start, end - 1, step):
         cpy[:] = img
         res.append(next(generator))
 
-        if (axis[0] != None and axis[1] != None):
-            axis[0].clear()
-            axis[1].clear()
-            axis[0].imshow(res, cmap=cm.Greys_r, vmin=0, vmax=amax(res))
-            axis[1].imshow(cpy, cmap=cm.Greys_r, vmin=0, vmax=1)
-            plt.pause(0.000001)
+        animation(res, cpy)
+        # if (axis[0] != None and axis[1] != None):
+        #     axis[0].clear()
+        #     axis[1].clear()
+        #     axis[0].imshow(res, cmap=cm.Greys_r, vmin=0, vmax=amax(res))
+        #     axis[1].imshow(cpy, cmap=cm.Greys_r, vmin=0, vmax=1)
+        #     plt.pause(0.000001)
 
     res = divide(res, amax(res))
     return res, cpy
