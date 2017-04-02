@@ -68,7 +68,7 @@ class StartPage(tk.Frame):
         self.canvas.draw()
 
     def saveImage(self):
-        self._get_file_name()
+        self.ct.saveAsDICOM(self._get_file_name())
 
     def generateButtonFunc(self):
         self.ct.step = float(self.step.get())
@@ -120,10 +120,10 @@ class StartPage(tk.Frame):
         self.canvas.draw()
 
     def _get_file_name(self):
-        return askopenfilename(filetypes=(("PNG", "*.png"),
+        return askopenfilename(filetypes=(("All files", "*.*"),
+                                          ("PNG", "*.png"),
                                           ("JPG", "*.jpg"),
-                                          ("DICOM", "*.dcm"),
-                                          ("All files", "*.*")))
+                                          ("DICOM", "*.dcm")))
 
     def _buttons(self, row, col):
         self.readbutton = tk.Button(self, text="Load file", command=lambda: self.loadImage(), width=10)

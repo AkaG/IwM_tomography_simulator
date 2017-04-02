@@ -21,6 +21,9 @@ class ct():
     def loadImage(self, imgPath):
         self.image = data.imread(imgPath, as_grey=True)
 
+    def saveAsDICOM(self, imgPath):
+        return
+
     def generateSinogram(self, animate=lambda sin, lines: None):
         self.sinogram, self.lines = generate_sinogram(self.image, animation=animate, type=self.type, step=self.step, start=0, end=180,
                                                       n=self.n, phi=self.phi)
