@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 
@@ -61,14 +61,19 @@ class StartPage(tk.Frame):
         toolbar_frame.grid(row=11, column=0, columnspan=7)
 
     def loadImage(self):
-        self.ct.loadImage(self._get_file_name())
+        self.ct.loadImage(self._get_read_file_name())
         ax = self.fig.add_subplot(231)
         ax.clear()
         ax.imshow(self.ct.image, cmap=cm.Greys_r, vmin=0, vmax=1)
         self.canvas.draw()
 
     def saveImage(self):
-        self.ct.saveAsDICOM(self._get_file_name())
+        self.ct.pname = self.pname.get()
+        self.ct.plastname = self.plastname.get()
+        self.ct.page = self.pAge.get()
+        self.ct.pcomment = self.pcomment.get()
+
+        self.ct.saveAsDICOM(self._get_save_file_name())
 
     def generateButtonFunc(self):
         self.ct.step = float(self.step.get())
@@ -119,11 +124,16 @@ class StartPage(tk.Frame):
         axis[1].imshow(cpy, cmap=cm.Greys_r, vmin=0, vmax=1)
         self.canvas.draw()
 
-    def _get_file_name(self):
+    def _get_read_file_name(self):
         return askopenfilename(filetypes=(("All files", "*.*"),
                                           ("PNG", "*.png"),
                                           ("JPG", "*.jpg"),
                                           ("DICOM", "*.dcm")))
+
+    def _get_save_file_name(self):
+        return asksaveasfilename(filetypes=(("DICOM", "*.dcm"),
+                                            ("All files", "*.*")
+                                            ))
 
     def _buttons(self, row, col):
         self.readbutton = tk.Button(self, text="Load file", command=lambda: self.loadImage(), width=10)
@@ -176,15 +186,10 @@ class StartPage(tk.Frame):
 
         self.pAgelabel = tk.Label(self, text="Age")
         self.pAgelabel.grid(row=row + 2, column=col)
-        self.pAgePage = tk.Entry(self)
-        self.pAgePage.grid(row=row + 2, column=col + 1)
-
-        self.pdatelabel = tk.Label(self, text="Date")
-        self.pdatelabel.grid(row=row + 3, column=col)
-        self.pdatepage = tk.Entry(self)
-        self.pdatepage.grid(row=row + 3, column=col + 1)
+        self.pAge = tk.Entry(self)
+        self.pAge.grid(row=row + 2, column=col + 1)
 
         self.pcommentlabel = tk.Label(self, text="Comment")
-        self.pcommentlabel.grid(row=row + 4, column=col)
-        self.pcommentpage = tk.Entry(self)
-        self.pcommentpage.grid(row=row + 4, column=col + 1)
+        self.pcommentlabel.grid(row=row + 3, column=col, rowspan=2)
+        self.pcomment = tk.Entry(self)
+        self.pcomment.grid(row=row + 3, column=col + 1, rowspan=2)
