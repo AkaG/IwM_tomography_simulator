@@ -83,3 +83,9 @@ class ct():
 
     def generateDiff(self):
         self.reconstructionDiff = normalize(subtract(self.image, self.reconstruction))
+
+    def calculateMSE(self):
+        tmp = subtract(self.image, self.reconstruction)
+        tmp = np.power(tmp, 2)
+        tmp = sum(tmp)
+        return tmp / (shape(self.image)[0] * shape(self.image)[1])

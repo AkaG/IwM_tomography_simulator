@@ -50,6 +50,11 @@ class StartPage(tk.Frame):
         c = tk.Checkbutton(master=self, text="Animation", variable=self.doAnimation)
         c.grid(row=2, column=2)
 
+        self.mselabel = tk.Label(self, text="Calculated MSE")
+        self.mselabel.grid(row=1, column=2)
+        self.mse = tk.Entry(self)
+        self.mse.grid(row=1, column=3)
+
         self.fig = Figure(figsize=(15, 5), dpi=100)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
@@ -122,6 +127,9 @@ class StartPage(tk.Frame):
         ax.clear()
         ax.imshow(self.ct.reconstructionDiff, cmap=cm.Greys_r, vmin=amin(self.ct.reconstructionDiff), vmax=amax(self.ct.reconstruction))
         self.canvas.draw()
+
+        self.mse.delete(0, 'end')
+        self.mse.insert(0, self.ct.calculateMSE())
 
     def animate(self, res, cpy, axis):
         axis[0].clear()
