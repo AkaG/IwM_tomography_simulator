@@ -13,6 +13,8 @@ class TomographGUI(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         tk.Tk.wm_title(self, "Tomograph")
+        tk.Tk.rowconfigure(self, 0, weight=1)
+        tk.Tk.columnconfigure(self, 0, weight=1)
 
         frame = tk.Frame(self)
         frame.pack(side="top", fill="both", expand=True)
@@ -57,8 +59,12 @@ class StartPage(tk.Frame):
         toolbar = NavigationToolbar2TkAgg(self.canvas, toolbar_frame)
         toolbar.update()
 
-        self.canvas.get_tk_widget().grid(row=10, column=0, columnspan=8)
-        toolbar_frame.grid(row=11, column=0, columnspan=7)
+        self.canvas.get_tk_widget().grid(row=10, column=0, columnspan=8, sticky=tk.N+tk.S+tk.E+tk.W)
+        toolbar_frame.grid(row=11, column=0, columnspan=7, sticky=tk.N+tk.S+tk.E+tk.W)
+
+        self.rowconfigure(10, weight=1)
+        for i in range(8):
+            self.columnconfigure(i, weight=1)
 
     def loadImage(self):
         self.ct.loadImage(self._get_read_file_name())
